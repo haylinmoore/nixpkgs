@@ -82,6 +82,9 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/share/mailspring/mailspring $out/bin/mailspring
     ln -s ${lib.getLib openssl}/lib/libcrypto.so $out/lib/libcrypto.so.1.0.0
 
+    wrapProgram $out/bin/mailspring \
+        --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--enable-features=UseOzonePlatform --ozone-platform=wayland}}"
+
     runHook postInstall
   '';
 
