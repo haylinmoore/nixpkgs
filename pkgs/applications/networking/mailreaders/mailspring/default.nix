@@ -4,7 +4,7 @@
 }:
 let
   pname = "mailspring";
-  version = "1.13.3";
+  version = "1.14.0";
 
   meta = with lib; {
     description = "Beautiful, fast and maintained fork of Nylas Mail by one of the original authors";
