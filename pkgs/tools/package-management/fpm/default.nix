@@ -14,6 +14,16 @@ bundlerApp {
     binutils
   ];
 
+  # Add this to make binutils available in PATH during runtime
+  nativeBuildInputs = [
+    binutils
+  ];
+
+  # Ensure binutils is available at runtime
+  propagatedBuildInputs = [
+    binutils
+  ];
+
   passthru.updateScript = bundlerUpdateScript "fpm";
 
   meta = with lib; {
