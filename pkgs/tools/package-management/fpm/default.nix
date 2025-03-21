@@ -2,12 +2,17 @@
   lib,
   bundlerApp,
   bundlerUpdateScript,
+  binutils,
 }:
 
 bundlerApp {
   pname = "fpm";
   gemdir = ./.;
   exes = [ "fpm" ];
+
+  buildInputs = [
+    binutils
+  ];
 
   passthru.updateScript = bundlerUpdateScript "fpm";
 
