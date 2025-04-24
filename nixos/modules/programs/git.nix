@@ -18,6 +18,8 @@ in
         example = "gitFull";
       };
 
+      mommy = lib.mkEnableOption "enable 'mommy' shell alias for git";
+
       config = lib.mkOption {
         type =
           with lib.types;
@@ -112,6 +114,14 @@ in
       environment.interactiveShellInit = ''
         source ${cfg.package}/share/bash-completion/completions/git-prompt.sh
       '';
+    })
+    (lib.mkIf (cfg.enable && cfg.mommy) {
+      programs.bash.shellAliases = {
+        mommy = "git";
+      };
+      programs.zsh.shellAliases = {
+        mommy = "git";
+      };
     })
   ];
 
