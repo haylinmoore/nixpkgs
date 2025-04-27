@@ -60,6 +60,173 @@ let
           description = "Extra zone config to be appended at the end of the zone section.";
           default = "";
         };
+
+        useStructuredFormat = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+          description = "Whether to use the structured format for zone data instead of a raw zone file.";
+        };
+        origin = lib.mkOption {
+          type = lib.types.str;
+          default = "${name}.";
+          description = "The origin domain for this zone (typically ends with a dot).";
+        };
+        ttl = lib.mkOption {
+          type = lib.types.int;
+          default = 3600;
+          description = "Default TTL for records in this zone.";
+        };
+        soa = lib.mkOption {
+          type = lib.types.nullOr (
+            lib.types.submodule {
+              options = {
+                nameServer = lib.mkOption {
+                  type = lib.types.str;
+                  description = "Primary name server for this zone.";
+                };
+                adminEmail = lib.mkOption {
+                  type = lib.types.str;
+                  description = "Email address of the administrator (with @ replaced by .).";
+                  default = "hostmaster";
+                };
+                serial = lib.mkOption {
+                  type = lib.types.int;
+                  description = "Serial number for this zone.";
+                  default = 1;
+                };
+                refresh = lib.mkOption {
+                  type = lib.types.str;
+                  description = "How often secondary servers should check for updates.";
+                  default = "3h";
+                };
+                retry = lib.mkOption {
+                  type = lib.types.str;
+                  description = "How long to wait before retrying failed zone transfers.";
+                  default = "1h";
+                };
+                expire = lib.mkOption {
+                  type = lib.types.str;
+                  description = "How long secondary servers should consider data valid if primary is unreachable.";
+                  default = "1w";
+                };
+                negativeCacheTtl = lib.mkOption {
+                  type = lib.types.str;
+                  description = "How long negative responses should be cached.";
+                  default = "1h";
+                };
+              };
+            }
+          );
+          default = null;
+          description = "SOA record for this zone.";
+        };
+        records = lib.mkOption {
+          type = lib.types.listOf (
+            lib.types.submodule {
+              options = {
+                name = lib.mkOption {
+                  type = lib.types.str;
+                  description = "Record name (hostname or @ for zone apex).";
+                };
+                type = lib.mkOption {
+                  type = lib.types.enum [
+                    "A"
+                    "AAAA"
+                    "CNAME"
+                    "MX"
+                    "NS"
+                    "PTR"
+                    "SRV"
+                    "TXT"
+                  ];
+                  description = "DNS record type.";
+                };
+                # Fields for different record types
+                address = lib.mkOption {
+                  type = lib.types.nullOr lib.types.str;
+                  default = null;
+                  description = "IP address for A or AAAA records.";
+                };
+                target = lib.mkOption {
+                  type = lib.types.nullOr lib.types.str;
+                  default = null;
+                  description = "Target hostname for CNAME, MX, NS, or SRV records.";
+                };
+                priority = lib.mkOption {
+                  type = lib.types.nullOr lib.types.int;
+                  default = null;
+                  description = "Priority for MX or SRV records.";
+                };
+                weight = lib.mkOption {
+                  type = lib.types.nullOr lib.types.int;
+                  default = null;
+                  description = "Weight for SRV records.";
+                };
+                port = lib.mkOption {
+                  type = lib.types.nullOr lib.types.int;
+                  default = null;
+                  description = "Port for SRV records.";
+                };
+                text = lib.mkOption {
+                  type = lib.types.nullOr lib.types.str;
+                  default = null;
+                  description = "Text content for TXT records.";
+                };
+              };
+            }
+          );
+          default = [ ];
+          description = "List of DNS records for this zone.";
+        };
+      };
+
+      # Add a config check to ensure either file or structured format is used
+      config = {
+        file = lib.mkIf config.useStructuredFormat (
+          let
+            formatSOA = soa: ''
+              @ IN SOA ${soa.nameServer} ${soa.adminEmail} (
+                         ${toString soa.serial}    ; Serial
+                         ${soa.refresh}   ; Refresh
+                         ${soa.retry}   ; Retry
+                         ${soa.expire}   ; Expire
+                         ${soa.negativeCacheTtl})  ; Negative Cache TTL
+            '';
+
+            formatRecord =
+              record:
+              if record.type == "A" then
+                "${record.name} IN A ${record.address}"
+              else if record.type == "AAAA" then
+                "${record.name} IN AAAA ${record.address}"
+              else if record.type == "CNAME" then
+                "${record.name} IN CNAME ${record.target}"
+              else if record.type == "MX" then
+                "${record.name} IN MX ${toString record.priority} ${record.target}"
+              else if record.type == "NS" then
+                "${record.name} IN NS ${record.target}"
+              else if record.type == "PTR" then
+                "${record.name} IN PTR ${record.target}"
+              else if record.type == "SRV" then
+                "${record.name} IN SRV ${toString record.priority} ${toString record.weight} ${toString record.port} ${record.target}"
+              else if record.type == "TXT" then
+                "${record.name} IN TXT \"${record.text}\""
+              else
+                throw "Unsupported record type: ${record.type}";
+
+            zoneText = ''
+              $ORIGIN ${config.origin}
+              $TTL ${toString config.ttl}
+
+              ; SOA Record
+              ${formatSOA config.soa}
+
+              ; Other Records
+              ${lib.concatMapStrings (r: "${formatRecord r}\n") config.records}
+            '';
+          in
+          pkgs.writeText "zone-${config.name}" zoneText
+        );
       };
     };
 
@@ -87,35 +254,36 @@ let
     ${cfg.extraConfig}
 
     ${lib.concatMapStrings (
-      {
-        name,
-        file,
-        master ? true,
-        slaves ? [ ],
-        masters ? [ ],
-        allowQuery ? [ ],
-        extraConfig ? "",
-      }:
+      zone:
+      let
+        zoneConfig = {
+          inherit (zone) name file master;
+          slaves = zone.slaves or [ ];
+          masters = zone.masters or [ ];
+          allowQuery = zone.allowQuery or [ "any" ];
+          extraConfig = zone.extraConfig or "";
+        };
+      in
       ''
-        zone "${name}" {
-          type ${if master then "master" else "slave"};
-          file "${file}";
+        zone "${zoneConfig.name}" {
+          type ${if zoneConfig.master then "master" else "slave"};
+          file "${zoneConfig.file}";
           ${
-            if master then
+            if zoneConfig.master then
               ''
                 allow-transfer {
-                  ${lib.concatMapStrings (ip: "${ip};\n") slaves}
+                  ${lib.concatMapStrings (ip: "${ip};\n") zoneConfig.slaves}
                 };
               ''
             else
               ''
                 masters {
-                  ${lib.concatMapStrings (ip: "${ip};\n") masters}
+                  ${lib.concatMapStrings (ip: "${ip};\n") zoneConfig.masters}
                 };
               ''
           }
-          allow-query { ${lib.concatMapStrings (ip: "${ip}; ") allowQuery}};
-          ${extraConfig}
+          allow-query { ${lib.concatMapStrings (ip: "${ip}; ") zoneConfig.allowQuery}};
+          ${zoneConfig.extraConfig}
         };
       ''
     ) (lib.attrValues cfg.zones)}
