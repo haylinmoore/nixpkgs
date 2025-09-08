@@ -343,8 +343,6 @@ with pkgs;
 
   coolercontrol = recurseIntoAttrs (callPackage ../applications/system/coolercontrol { });
 
-  copilot-language-server-fhs = copilot-language-server.fhs;
-
   cup-docker-noserver = cup-docker.override { withServer = false; };
 
   deck = callPackage ../by-name/de/deck/package.nix {
@@ -3143,7 +3141,10 @@ with pkgs;
     cppSupport = false;
   };
 
-  hdf5-threadsafe = hdf5.override { threadsafe = true; };
+  hdf5-threadsafe = hdf5.override {
+    cppSupport = false;
+    threadsafe = true;
+  };
 
   heaptrack = kdePackages.callPackage ../development/tools/profiling/heaptrack { };
 
@@ -6483,9 +6484,10 @@ with pkgs;
     apacheKafka_3_8
     apacheKafka_3_9
     apacheKafka_4_0
+    apacheKafka_4_1
     ;
 
-  apacheKafka = apacheKafka_4_0;
+  apacheKafka = apacheKafka_4_1;
 
   asn2quickder = python3Packages.callPackage ../development/tools/asn2quickder { };
 
@@ -13620,9 +13622,7 @@ with pkgs;
 
   zeroc-ice-cpp11 = zeroc-ice.override { cpp11 = true; };
 
-  zexy = callPackage ../applications/audio/pd-plugins/zexy {
-    autoconf = buildPackages.autoconf269;
-  };
+  zexy = callPackage ../applications/audio/pd-plugins/zexy { };
 
   zed-editor-fhs = zed-editor.fhs;
 

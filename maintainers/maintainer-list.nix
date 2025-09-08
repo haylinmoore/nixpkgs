@@ -7504,12 +7504,6 @@
     githubId = 9874955;
     name = "Elnu";
   };
-  elohmeier = {
-    email = "elo-nixos@nerdworks.de";
-    github = "elohmeier";
-    githubId = 2536303;
-    name = "Enno Lohmeier";
-  };
   elpdt852 = {
     email = "nix@pdtpartners.com";
     github = "elpdt852";
@@ -8262,13 +8256,6 @@
     name = "feathecutie";
     github = "feathecutie";
     githubId = 53912746;
-  };
-  federicoschonborn = {
-    name = "Federico Damián Schonborn";
-    email = "federicoschonborn@disroot.org";
-    github = "FedericoSchonborn";
-    githubId = 62166915;
-    matrix = "@FedericoDSchonborn:matrix.org";
   };
   fedx-sudo = {
     email = "fedx-sudo@pm.me";
@@ -24425,6 +24412,12 @@
     githubId = 7512804;
     name = "Martin Langlotz";
   };
+  stapelberg = {
+    name = "Michael Stapelberg";
+    github = "stapelberg";
+    githubId = 55506;
+    email = "michael+nix@stapelberg.ch";
+  };
   starcraft66 = {
     name = "Tristan Gosselin-Hane";
     email = "starcraft66@gmail.com";
@@ -24720,9 +24713,9 @@
     name = "Subin Kim";
   };
   sugar700 = {
-    email = "sugar@sylveon.social";
+    email = "sugar@sugar.lgbt";
     github = "sugar700";
-    githubId = 168804988;
+    githubId = 1297598;
     name = "sugar";
   };
   suhr = {
@@ -26240,6 +26233,11 @@
     github = "toyboot4e";
     githubId = 47905926;
     name = "toyboot4e";
+  };
+  tphanir = {
+    github = "tphanir";
+    name = "phani";
+    githubId = 125972587;
   };
   tpw_rules = {
     name = "Thomas Watson";
