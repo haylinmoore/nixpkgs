@@ -859,6 +859,8 @@ with pkgs;
 
   referencesByPopularity = callPackage ../build-support/references-by-popularity { };
 
+  dockerAutoLayer = callPackage ../build-support/docker/auto-layer.nix { };
+
   dockerMakeLayers = callPackage ../build-support/docker/make-layers.nix { };
 
   removeReferencesTo = callPackage ../build-support/remove-references-to {
@@ -9237,6 +9239,14 @@ with pkgs;
 
   zigStdenv = if stdenv.cc.isZig then stdenv else lowPrio zig.passthru.stdenv;
 
+  inherit (callPackages ../development/tools/zls { })
+    zls_0_14
+    zls_0_15
+    ;
+
+  # This should be kept updated to ensure the default zls version matches the default zig version.
+  zls = zls_0_14;
+
   libzint = zint-qt.override { withGUI = false; };
 
   aroccPackages = recurseIntoAttrs (callPackage ../development/compilers/arocc { });
@@ -10770,6 +10780,7 @@ with pkgs;
   inherit (callPackage ../misc/uboot { })
     buildUBoot
     ubootTools
+    ubootPythonTools
     ubootA20OlinuxinoLime
     ubootA20OlinuxinoLime2EMMC
     ubootBananaPi
@@ -15128,8 +15139,6 @@ with pkgs;
 
   nix-info = callPackage ../tools/nix/info { };
   nix-info-tested = nix-info.override { doCheck = true; };
-
-  nix-linter = haskell.lib.compose.justStaticExecutables (haskellPackages.nix-linter);
 
   nix-prefetch-github = with python3Packages; toPythonApplication nix-prefetch-github;
 

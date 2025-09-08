@@ -64,7 +64,6 @@ let
   # list of all compilers to test specific packages on
   released = with compilerNames; [
     ghc8107
-    ghc902
     ghc928
     ghc948
     ghc963
@@ -317,7 +316,6 @@ let
         nix-delegate
         nix-deploy
         nix-diff
-        nix-linter
         nix-output-monitor
         nix-script
         nix-tree
@@ -385,11 +383,7 @@ let
             "aarch64-darwin"
           ]
           {
-            haskell.compiler = lib.recursiveUpdate (packagePlatforms pkgs.pkgsMusl.haskell.compiler) {
-              # remove musl ghc865Binary since it is known to be broken and
-              # causes an evaluation error on darwin.
-              ghc865Binary = { };
-            };
+            haskell.compiler = packagePlatforms pkgs.pkgsMusl.haskell.compiler;
 
             # Get some cache going for MUSL-enabled GHC.
             haskellPackages = {
@@ -561,7 +555,6 @@ let
         # of core packages, it is not always reasonable to get cabal-install to
         # work with older compilers.
         compilerNames.ghc8107
-        compilerNames.ghc902
         compilerNames.ghc928
         compilerNames.ghc948
       ] released;
@@ -583,14 +576,11 @@ let
       haskell-language-server = lib.subtractLists [
         # Support ceased as of 2.3.0.0
         compilerNames.ghc8107
-        # Support ceased as of 2.5.0.0
-        compilerNames.ghc902
         # Support ceased as of 2.10.0.0
         compilerNames.ghc928
       ] released;
       hoogle = released;
       hlint = lib.subtractLists [
-        compilerNames.ghc902
         compilerNames.ghc9101
         compilerNames.ghc9102
         compilerNames.ghc9122
@@ -603,7 +593,6 @@ let
       titlecase = released;
       ghc-api-compat = [
         compilerNames.ghc8107
-        compilerNames.ghc902
       ];
       ghc-bignum = [
         compilerNames.ghc8107
@@ -692,11 +681,9 @@ let
         constituents = accumulateDerivations [
           jobs.pkgsMusl.haskell.compiler.ghc8107Binary
           jobs.pkgsMusl.haskell.compiler.ghc8107
-          jobs.pkgsMusl.haskell.compiler.ghc902
           jobs.pkgsMusl.haskell.compiler.ghc928
           jobs.pkgsMusl.haskell.compiler.ghcHEAD
           jobs.pkgsMusl.haskell.compiler.integer-simple.ghc8107
-          jobs.pkgsMusl.haskell.compiler.native-bignum.ghc902
           jobs.pkgsMusl.haskell.compiler.native-bignum.ghc928
           jobs.pkgsMusl.haskell.compiler.native-bignum.ghcHEAD
         ];
