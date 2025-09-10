@@ -1123,8 +1123,8 @@ let
         mktplcRef = {
           name = "vscode-database-client2";
           publisher = "cweijan";
-          version = "8.3.9";
-          hash = "sha256-HryTXKCBF7i9zV3JELAM+NF3JW97XWCoSqTRPNr8yjQ=";
+          version = "8.4.0";
+          hash = "sha256-ly54itCpVdirU6GmK2GM7A749wt2SbHR/TidutTwCUE=";
         };
         meta = {
           description = "Database Client For Visual Studio Code";
@@ -1985,8 +1985,8 @@ let
         mktplcRef = {
           name = "gitlab-workflow";
           publisher = "gitlab";
-          version = "6.38.1";
-          hash = "sha256-OxzjqafPYOe6qMSI0cW3qAU6xbBrIpx47cDz8lJ9ZG0=";
+          version = "6.40.1";
+          hash = "sha256-FFuYM15NGqpS2efijAXCvXhvV2A87lshquEDPdGT9qk=";
         };
         meta = {
           description = "GitLab extension for Visual Studio Code";
