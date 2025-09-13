@@ -893,6 +893,12 @@
     githubId = 4717906;
     name = "Jakub Skokan";
   };
+  aiyion = {
+    email = "git@aiyionpri.me";
+    github = "AiyionPrime";
+    githubId = 6937725;
+    name = "Jan-Niklas Burfeind";
+  };
   ajaxbits = {
     email = "contact@ajaxbits.com";
     github = "ajaxbits";
@@ -6635,6 +6641,12 @@
     github = "dlip";
     githubId = 283316;
     name = "Dane Lipscombe";
+  };
+  dlugoschvincent = {
+    email = "dlugoschvincent@gmail.com";
+    github = "dlugoschvincent";
+    githubId = 48405050;
+    name = "Vincent Dlugosch";
   };
   dlurak = {
     github = "dlurak";
@@ -16783,6 +16795,14 @@
     github = "MikaelFangel";
     githubId = 34864484;
     name = "Mikael Fangel";
+  };
+  mikatammi = {
+    email = "mikatammi@gmail.com";
+    github = "mikatammi";
+    githubId = 826368;
+    name = "Mika Tammi";
+    matrix = "@oak:universumi.fi";
+    keys = [ { fingerprint = "3606 AD2B 342F 70B3 B306  E724 BF5B DF55 A973 5223"; } ];
   };
   mikecm = {
     email = "mikecmcleod@gmail.com";
