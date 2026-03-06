@@ -18,8 +18,6 @@ buildGoModule {
 
   vendorHash = "sha256-n+P3L3dT2kYuTyI2qX/nrLRgFIUsP3kkwNZmRQ8EFRs=";
 
-  passthru.updateScript = ./update.sh;
-
   checkFlags =
     let
       skippedTests = [
