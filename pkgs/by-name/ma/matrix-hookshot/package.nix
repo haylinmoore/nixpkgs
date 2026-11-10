@@ -1,5 +1,6 @@
 {
   lib,
+  aws-lc,
   stdenv,
   fetchFromGitHub,
   fetchPnpmDeps,
@@ -43,7 +44,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Sxsb/VYNBBJLeEJr62Q6hSnn2Ofn47hxFs/nvesbDEw=";
   };
 
-  buildInputs = [ openssl ];
+  buildInputs = [
+    aws-lc
+    openssl
+  ];
 
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
