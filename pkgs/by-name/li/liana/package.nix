@@ -20,6 +20,7 @@
   libxi,
   libxcursor,
   libx11,
+  sqlite,
 }:
 
 let
@@ -62,6 +63,7 @@ rustPlatform.buildRustPackage rec {
 
   buildInputs = [
     fontconfig
+    sqlite
     udev
   ];
 
