@@ -4,6 +4,8 @@
   lib,
   nixosTests,
   cacert,
+  pkg-config,
+  sqlite,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -27,6 +29,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "-p"
     "migration"
   ];
+
+  nativeBuildInputs = [ pkg-config ];
+
+  buildInputs = [ sqlite ];
 
   nativeCheckInputs = [ cacert ];
 
