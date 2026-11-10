@@ -13,6 +13,7 @@
   pcsclite,
   perl,
   pkg-config,
+  sqlite,
   udev,
   webkitgtk_4_1,
   wrapGAppsHook4,
@@ -80,7 +81,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ wrapGAppsHook4 ];
 
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
+  buildInputs = [
+    sqlite
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
     alsa-lib
     dbus
     glib-networking
