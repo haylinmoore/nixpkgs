@@ -1,5 +1,6 @@
 {
   lib,
+  libgit2,
   rustPlatform,
   fetchFromGitHub,
   makeWrapper,
@@ -30,6 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = [
+    libgit2
     openssl
     rust-jemalloc-sys # transitive dependency via the hayabusa-evtx crate
   ];
