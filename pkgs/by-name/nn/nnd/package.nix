@@ -4,7 +4,7 @@
   pkgsCross,
 }:
 let
-  inherit (pkgsCross.musl64) rustPlatform;
+  inherit (pkgsCross.musl64) rustPlatform rust-jemalloc-sys;
 in
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "nnd";
@@ -18,6 +18,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-p3BbXKrTo3ggNGXorVwhANcm6NRzik69jHwn7cM5S1s=";
+
+  buildInputs = [ rust-jemalloc-sys ];
 
   meta = {
     description = "Debugger for Linux";
