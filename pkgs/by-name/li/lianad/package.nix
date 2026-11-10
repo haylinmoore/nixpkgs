@@ -3,6 +3,8 @@
   stdenv,
   rustPlatform,
   fetchFromGitHub,
+  pkg-config,
+  sqlite,
   udev,
 }:
 
@@ -19,7 +21,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-zz0hqOrk74FD2ct4LIDJJJRNxwR/6OXk3PUJFBYX0AA=";
 
-  buildInputs = [ udev ];
+  nativeBuildInputs = [ pkg-config ];
+
+  buildInputs = [
+    sqlite
+    udev
+  ];
 
   buildAndTestSubdir = "lianad";
 
