@@ -10,6 +10,8 @@
   buildPackages,
   versionCheckHook,
   nix-update-script,
+  aws-lc,
+  zstd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -28,7 +30,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   doCheck = false; # test requires network access
 
   buildInputs = [
+    aws-lc
     openssl
+    zstd
   ];
 
   nativeBuildInputs = [
