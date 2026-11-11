@@ -36,7 +36,7 @@ in
   name = "http01-builtin";
   meta = {
     maintainers = lib.teams.acme.members;
-    # Hard timeout in seconds. Average run time is about 90 seconds.
+    # Hard timeout in seconds. Average run time is about 200 seconds.
     timeout = 300;
   };
 
