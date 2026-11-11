@@ -215,18 +215,23 @@ let
       useDns = data.dnsProvider != null;
       destPath = "/var/lib/acme/${cert}";
 
+      # ACME servers lowercase identifiers and lego rejects orders whose
+      # identifiers differ from the requested ones, so request lowercase names.
+      domain = lib.toLower data.domain;
+
       # Minica and lego have a "feature" which replaces * with _. We need
       # to make this substitution to reference the output files from both programs.
       # End users never see this since we rename the certs.
-      keyName = builtins.replaceStrings [ "*" ] [ "_" ] data.domain;
+      keyName = builtins.replaceStrings [ "*" ] [ "_" ] domain;
 
       # FIXME when mkChangedOptionModule supports submodules, change to that.
       # This is a workaround
-      extraDomains =
+      extraDomains = map lib.toLower (
         data.extraDomainNames
         ++ (lib.optionals (data.extraDomains != "_mkMergedOptionModule") (
           builtins.attrNames data.extraDomains
-        ));
+        ))
+      );
 
       # Create hashes for cert data directories based on configuration
       # Flags are separated to avoid collisions
@@ -302,7 +307,7 @@ let
         "--key-type"
         data.keyType
         "-d"
-        data.domain
+        domain
       ]
       ++ lib.concatMap (name: [
         "-d"
@@ -408,7 +413,7 @@ let
 
         # Working directory will be /tmp
         # minica will output to a folder sharing the name of the first domain
-        # in the list, which will be ${data.domain}
+        # in the list, which will be ${domain}
         script = wrapInFlock ''
           set -ex
 
@@ -422,8 +427,8 @@ let
             lib.cli.toCommandLineShellGNU { } {
               ca-key = "ca/key.pem";
               ca-cert = "ca/cert.pem";
-              domains = lib.concatStringsSep "," (lib.filter isDomainName ([ data.domain ] ++ extraDomains));
-              ip-addresses = lib.concatStringsSep "," (lib.filter isIP ([ data.domain ] ++ extraDomains));
+              domains = lib.concatStringsSep "," (lib.filter isDomainName ([ domain ] ++ extraDomains));
+              ip-addresses = lib.concatStringsSep "," (lib.filter isIP ([ domain ] ++ extraDomains));
             }
           }
 
