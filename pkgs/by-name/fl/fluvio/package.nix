@@ -6,6 +6,9 @@
   kubernetes-helm,
   gitMinimal,
   installShellFiles,
+  openssl,
+  pkg-config,
+  zstd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -28,6 +31,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installShellFiles
     # Needed by build.rs scripts
     gitMinimal
+    pkg-config
+  ];
+
+  buildInputs = [
+    openssl
+    zstd
   ];
 
   cargoBuildFlags = [
