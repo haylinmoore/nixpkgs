@@ -584,12 +584,18 @@ let
 
           # Multiple certificates can share an account. Serialize the check and
           # migration because lego v5 moves the shared key out of keys/.
-          exec {MIGRATION_LOCK_FD}> "${lockdir}migration-${accountHash}.lock"
-          ${pkgs.flock}/bin/flock "$MIGRATION_LOCK_FD"
+          # If the account does not exist yet, keep the lock until lego has
+          # registered it, so that no other certificate registers it concurrently.
+          exec {ACCOUNT_LOCK_FD}> "${lockdir}account-${accountHash}.lock"
+          ${pkgs.flock}/bin/flock "$ACCOUNT_LOCK_FD"
           if [ -n "$(find accounts -path '*/keys/*.key' -print -quit)" ]; then
             printf 'Y\n' | lego migrate --account-only --path .
           fi
-          exec {MIGRATION_LOCK_FD}>&-
+          if [ -n "$(find accounts -name '${
+            if (data.email != null) then data.email else placeholderEmail
+          }.key' -print -quit)" ]; then
+            exec {ACCOUNT_LOCK_FD}>&-
+          fi
 
           # Check if the existing certificate can be renewed.
           # We also need an account key. Avoids #190493
@@ -1263,9 +1269,12 @@ in
           # Create targets to limit the number of simultaneous account creations
           # How it works:
           # - Pick a "leader" cert service, which will be in charge of creating the account,
-          #   and run first (requires + after)
+          #   and run first (wants + after)
           # - Make all other cert services sharing the same account wait for the leader to
-          #   finish before starting (requiredBy + before).
+          #   finish before starting (wantedBy + before).
+          # Wants is used so that a failing leader doesn't fail every other cert on the account.
+          # Should the leader fail before registering the account, the account lock in the
+          # order/renew script still prevents concurrent registrations.
           # Using a target here is fine - account creation is a one time event. Even if
           # systemd clean --what=state is used to delete the account, so long as the user
           # then runs one of the cert services, there won't be any issues.
@@ -1280,9 +1289,9 @@ in
               );
             in
             lib.nameValuePair "acme-account-${hash}" {
-              requiredBy = followers;
+              wantedBy = followers;
               before = followers;
-              requires = [ leader ];
+              wants = [ leader ];
               after = [ leader ];
               unitConfig.RefuseManualStart = true;
             }
