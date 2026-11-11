@@ -43,6 +43,10 @@
   withEnterpriseFeatures ? false,
   withClosedSourceFeatures ? false,
   nixosTests,
+  aws-lc,
+  oniguruma,
+  rust-jemalloc-sys,
+  zstd,
 }:
 
 let
@@ -158,6 +162,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxml2
     xmlsec
     libxslt
+    aws-lc
+    oniguruma
+    rust-jemalloc-sys
+    zstd
   ];
 
   nativeBuildInputs = [
