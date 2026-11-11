@@ -2,6 +2,7 @@
   fetchFromGitHub,
   lib,
   nix-update-script,
+  oniguruma,
   openssl,
   pkg-config,
   rustPlatform,
@@ -24,11 +25,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-tvice1qSse6VLnJNzqEBzJsiPqMYJKg3cbu34+0ovxU=";
 
-  nativeBuildInputs = lib.optionals stdenvNoCC.hostPlatform.isLinux [
-    pkg-config
-  ];
+  nativeBuildInputs = [ pkg-config ];
 
-  buildInputs = lib.optionals stdenvNoCC.hostPlatform.isLinux [
+  buildInputs = [
+    oniguruma
+  ]
+  ++ lib.optionals stdenvNoCC.hostPlatform.isLinux [
     openssl
   ];
 
