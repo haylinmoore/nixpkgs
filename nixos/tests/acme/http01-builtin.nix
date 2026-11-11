@@ -161,6 +161,25 @@ in
             };
           };
 
+          # ACME servers lowercase identifiers, lego rejects orders whose
+          # identifiers differ from the requested ones (#406733).
+          mixed_case.configuration = {
+            security.acme.maxConcurrentRenewals = 1;
+            security.acme.certs."MixedCase.${domain}" = {
+              extraDomainNames = [ "MixedCase-Alt.${domain}" ];
+              listenHTTP = ":80";
+            };
+          };
+
+          mixed_case_renew.configuration = {
+            security.acme.maxConcurrentRenewals = 1;
+            security.acme.certs."MixedCase.${domain}" = {
+              extraDomainNames = [ "MixedCase-Alt.${domain}" ];
+              listenHTTP = ":80";
+              validMinDays = 9999;
+            };
+          };
+
           csr.configuration =
             let
               conf = pkgs.writeText "openssl.csr.conf" ''
@@ -221,6 +240,7 @@ in
       cert = "${certName}"
       cert2 = "builtin-2." + domain
       cert3 = "builtin-3." + domain
+      mixed_cert = "MixedCase." + domain
       migration_certs = [cert] + ${builtins.toJSON migrationCertNames}
       migration_units = [f"acme-order-renew-{name}.service" for name in migration_certs]
       legacy_account_dir = "/var/lib/acme/.lego/accounts/1ccf607d9aa280e9af00"
@@ -462,6 +482,35 @@ in
           check_issuer(builtin, cert3, "pebble")
           check_domain(builtin, cert3, cert3)
           check_permissions(builtin, cert, "acme")
+
+      with subtest("Renews certs for domains with uppercase letters"):
+          switch_to(builtin, "mixed_case")
+          # Joins the job started by the switch
+          builtin.succeed(f"systemctl start acme-order-renew-{mixed_cert}.service")
+
+          check_issuer(builtin, mixed_cert, "pebble")
+          check_domain(builtin, mixed_cert, mixed_cert.lower())
+          check_domain(builtin, mixed_cert, f"mixedcase-alt.{domain}")
+          hash = builtin.succeed(f"sha256sum /var/lib/acme/{mixed_cert}/cert.pem | tee /dev/stderr")
+
+          switch_to(builtin, "mixed_case_renew")
+          builtin.succeed(f"systemctl start acme-order-renew-{mixed_cert}.service")
+
+          check_issuer(builtin, mixed_cert, "pebble")
+          hash_after = builtin.succeed(f"sha256sum /var/lib/acme/{mixed_cert}/cert.pem | tee /dev/stderr")
+          assert hash != hash_after, "Certificate was not renewed"
+
+          # The installed cert must be the one lego wrote last
+          builtin.succeed(
+              f"""
+              set -euo pipefail
+              ls -la /var/lib/acme/.lego/{mixed_cert}/*/ > /dev/stderr
+              newest=$(find /var/lib/acme/.lego/{mixed_cert} -name '*.crt' ! -name '*.issuer.crt' -printf '%T@ %p\\n' \\
+                | sort -n | tail -1 | cut -d' ' -f2-)
+              cmp "$newest" /var/lib/acme/{mixed_cert}/fullchain.pem
+              """
+          )
+          check_permissions(builtin, mixed_cert, "acme")
 
       with subtest("Can renew using a CSR"):
           builtin.succeed(f"systemctl stop acme-{cert}.service")
