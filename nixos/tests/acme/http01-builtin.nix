@@ -161,6 +161,22 @@ in
             };
           };
 
+          # Two certs on a new account. The alphabetically first cert becomes the
+          # account leader and fails validation, since nothing serves port 80 for it.
+          # The other cert must still be issued.
+          leader_failure.configuration = {
+            security.acme.certs = {
+              "leader-fail.${domain}" = {
+                email = "leader-failure@${domain}";
+                listenHTTP = ":81";
+              };
+              "leader-ok.${domain}" = {
+                email = "leader-failure@${domain}";
+                listenHTTP = ":80";
+              };
+            };
+          };
+
           csr.configuration =
             let
               conf = pkgs.writeText "openssl.csr.conf" ''
@@ -462,6 +478,20 @@ in
           check_issuer(builtin, cert3, "pebble")
           check_domain(builtin, cert3, cert3)
           check_permissions(builtin, cert, "acme")
+
+      with subtest("A failing cert does not block other certs on the same account"):
+          builtin.succeed("systemctl stop renew-triggered.target")
+          builtin.execute("/tmp/specialisation/leader_failure/bin/switch-to-configuration test")
+          # The main cert is reissued on this switch and also binds port 80
+          builtin.wait_for_unit("renew-triggered.target")
+          builtin.succeed(f"systemctl start acme-order-renew-leader-ok.{domain}.service")
+
+          check_issuer(builtin, f"leader-ok.{domain}", "pebble")
+          check_domain(builtin, f"leader-ok.{domain}", f"leader-ok.{domain}")
+          check_issuer(builtin, f"leader-fail.{domain}", "minica")
+
+          builtin.succeed(f"systemctl stop acme-order-renew-leader-fail.{domain}.service")
+          builtin.succeed("systemctl reset-failed")
 
       with subtest("Can renew using a CSR"):
           builtin.succeed(f"systemctl stop acme-{cert}.service")
